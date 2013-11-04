@@ -33,6 +33,7 @@ namespace hpl {
 	
 	class cAI;
 	class cGraphics;
+	class cRiftCompositor;
 	class cResources;
 	class cSystem;
 	class cSound;
@@ -139,8 +140,11 @@ namespace hpl {
 
         cCollider2D *mpCollider2D;
 
+        cRiftCompositor* mpRiftCompositor;
+
 		bool mbDrawScene;
 		bool mbUpdateMap;
+		bool mbRiftSupport;
 
 		tWorld3DList mlstWorld3D;
 		cWorld3D* mpCurrentWorld3D;

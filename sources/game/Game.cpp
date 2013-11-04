@@ -23,6 +23,7 @@
 #include "system/String.h"
 #include "input/Input.h"
 #include "input/Mouse.h"
+#include "input/HMD.h"
 #include "resources/Resources.h"
 #include "graphics/Graphics.h"
 #include "graphics/LowLevelGraphics.h"
@@ -209,6 +210,7 @@ namespace hpl {
 		mpHaptic = NULL;
 #endif
 
+		mpHMD = mpGameSetup->CreateHMD(mpInput);
 
 		Log(" Creating scene module\n");
 		mpScene = mpGameSetup->CreateScene(mpGraphics, mpResources, mpSound,mpPhysics,mpSystem,mpAI,mpHaptic);
@@ -219,6 +221,8 @@ namespace hpl {
 		//Init the resources
 		mpResources->Init(mpGraphics,mpSystem, mpSound,mpScene,mpGui);
 
+		mbRiftSupport = aVars.GetBool("RiftSupport", false);
+
 		//Init the graphics
 		mpGraphics->Init(aVars.GetInt("ScreenWidth",800),
 			aVars.GetInt("ScreenHeight",600),
@@ -226,7 +230,10 @@ namespace hpl {
 			aVars.GetBool("Fullscreen",false),
 			aVars.GetInt("Multisampling",0), 
 			aVars.GetString("WindowCaption"),
-			mpResources);
+			mpResources,
+			mpHMD,
+			aVars.GetInt("RiftFramebufferWidth", 1600),
+			aVars.GetInt("RiftFramebufferHeight", 1000));
 
 		//Init Sound
 		mpSound->Init(mpResources, aVars.GetBool("UseSoundHardware",true), 
@@ -269,6 +276,7 @@ namespace hpl {
 		mpUpdater->AddGlobalUpdate(mpAI);
 		mpUpdater->AddGlobalUpdate(mpGui);
 		mpUpdater->AddGlobalUpdate(mpResources);
+		mpUpdater->AddGlobalUpdate(mpHMD);
 		if(mpHaptic) mpUpdater->AddGlobalUpdate(mpHaptic);
 
 		//Setup the "default" updater container
@@ -313,6 +321,7 @@ namespace hpl {
 		hplDelete(mpGui);
 		hplDelete(mpScene);
 		if(mpHaptic) hplDelete(mpHaptic);
+		if(mpHMD) hplDelete(mpHMD);
 		hplDelete(mpInput);
 		hplDelete(mpSound);
 		hplDelete(mpGraphics);
@@ -430,7 +439,7 @@ namespace hpl {
 				
 				//Update fps counter.
 				mpFPSCounter->AddFrame();
-	           	
+
 				//Update the screen.
 				mpGraphics->GetLowLevel()->SwapBuffers();
 				//Log("Swap done: %d\n", GetApplicationTime());

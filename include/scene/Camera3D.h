@@ -156,7 +156,8 @@ namespace hpl {
 		
 		const cMatrixf& GetViewMatrix();
 		const cMatrixf& GetProjectionMatrix();
-		
+		void SetProjection(const cMatrixf &a_mtxA){m_mtxProjection = a_mtxA;}
+
 		const cMatrixf& GetMoveMatrix();
 
 		//iCamera stuff:

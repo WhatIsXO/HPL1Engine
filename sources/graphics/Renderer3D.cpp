@@ -218,10 +218,8 @@ namespace hpl {
 			Log("   Refraction will not be supported!\n");
 		}
 
-
 		/////////////////////////////////////////////
 		//Create sky box graphics.
-
 		Log("   init sky box\n");
 		InitSkyBox();
 
@@ -246,7 +244,6 @@ namespace hpl {
 		if(mpRefractVtxProgram)mpResources->GetGpuProgramManager()->Destroy(mpRefractVtxProgram);
 		if(mpRefractFragProgram)mpResources->GetGpuProgramManager()->Destroy(mpRefractFragProgram);
 		if(mpRefractSpecFragProgram)mpResources->GetGpuProgramManager()->Destroy(mpRefractSpecFragProgram);
-	
 
 		if(mpSkyBox) hplDelete(mpSkyBox);
 		if(mpSkyBoxTexture && mbAutoDestroySkybox)
@@ -379,88 +376,22 @@ namespace hpl {
 		}
 		mRenderSettings.mDebugFlags = mDebugFlags;
 
+		DoRenderInt(apWorld, apCamera, afFrameTime);
+	}
+
+	void cRenderer3D::DoRenderInt(cWorld3D* apWorld, cCamera3D* apCamera, float afFrameTime)
+	{
 		/////////////////////////////////
 		//Set up rendering
 		BeginRendering(apCamera);
 
-		mRenderSettings.Clear();
-
-		////////////////////////////
-		// Render Z
-		//mpLowLevelGraphics->SetDepthTestFunc(eDepthTestFunc_E);
-		mpLowLevelGraphics->SetColorWriteActive(true, true, true,true);
-		mRenderSettings.mChannelMode = eMaterialChannelMode_RGBA;
-		
-		//mpLowLevelGraphics->SetColorWriteActive(false, false, false,false);
-		//mRenderSettings.mChannelMode = eMaterialChannelMode_Z;
-
-		//Set the ambient color
-		mpLowLevelGraphics->SetActiveTextureUnit(0);
-		mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorFunc,eTextureFunc_Modulate);
-		mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorSource0,eTextureSource_Texture);
-		mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorSource1,eTextureSource_Constant);
-		
-		//mpLowLevelGraphics->SetTextureEnv(eTextureParam_AlphaSource1,eTextureSource_Constant);
-
-		mpLowLevelGraphics->SetTextureConstantColor(mRenderSettings.mAmbientColor);
-
-		if(mbLog) Log("Rendering ZBuffer:\n");
-		RenderZ(apCamera);
-		
-        //reset parameters.
-		mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorSource1,eTextureSource_Previous);
-		//mpLowLevelGraphics->SetTextureEnv(eTextureParam_AlphaSource1,eTextureSource_Previous);
-		
-		////////////////////////////
-		//Render Occlusion Queries
-		mpLowLevelGraphics->SetColorWriteActive(false, false, false,false);
-		mRenderSettings.mChannelMode = eMaterialChannelMode_Z;
-
-		if(mbLog) Log("Rendering Occlusion Queries:\n");
-		mpLowLevelGraphics->SetDepthWriteActive(false);
-		RenderOcclusionQueries(apCamera);
-
-		////////////////////////////
-		//Render lighting
-		mRenderSettings.mChannelMode = eMaterialChannelMode_RGBA;
-		mpLowLevelGraphics->SetColorWriteActive(true, true, true,true);
-
-		mpLowLevelGraphics->SetDepthTestFunc(eDepthTestFunc_Equal);
-
-		if(mbLog) Log("Rendering Lighting:\n");
-		RenderLight(apCamera);
-
-		////////////////////////////
-		//Render Diffuse
-		if(mbLog) Log("Rendering Diffuse:\n");
-		RenderDiffuse(apCamera);
-
-		////////////////////////////
-		//Render fog
-		if(mbLog) Log("Rendering fog:\n");
-		RenderFog(apCamera);
-
-
-		////////////////////////////
-		//Render sky box
-		mpLowLevelGraphics->SetDepthTestFunc(eDepthTestFunc_LessOrEqual);
-
-		////////////////////////////
-		if(mbLog) Log("Rendering Skybox:\n");
-		RenderSkyBox(apCamera);
-
-		//Render transparent
-		if(mbLog) Log("Rendering Transperant:\n");
-		RenderTrans(apCamera);
+		RenderViewportContents(apCamera);
 
 		mRenderSettings.Reset(mpLowLevelGraphics);
 
-		////////////////////////////
-		//Render debug
-		RenderDebug(apCamera);
-
 		mpLowLevelGraphics->SetDepthWriteActive(true);
 	}
+
 
 	//-----------------------------------------------------------------------
 
@@ -536,7 +467,7 @@ namespace hpl {
 			cOcclusionQueryObject *pObject = it.Next();
 			//LogUpdate("Query: %d!\n",pObject->mpQuery);
 
-			while(pObject->mpQuery->FetchResults()==false);
+			pObject->mpQuery->FetchResults();
 
 			if(mbLog) Log(" Query: %d SampleCount: %d\n",	pObject->mpQuery,
 															pObject->mpQuery->GetSampleCount());
@@ -581,10 +512,89 @@ namespace hpl {
 
 		mpLowLevelGraphics->SetColor(cColor(1,1,1,1));
 
+		// Setup viewport and buffer here
+		// by adding new method to lowlevelgraphics
+
 		mRenderSettings.mpCamera = apCamera;
 
 		for(int i=0; i<MAX_TEXTUREUNITS; ++i)
 			mpLowLevelGraphics->SetTexture(i,NULL);
+	}
+
+	void cRenderer3D::RenderViewportContents(cCamera3D* apCamera)
+	{
+		mRenderSettings.Clear();
+
+		////////////////////////////
+		// Render Z
+		//mpLowLevelGraphics->SetDepthTestFunc(eDepthTestFunc_E);
+		mpLowLevelGraphics->SetColorWriteActive(true, true, true,true);
+		mRenderSettings.mChannelMode = eMaterialChannelMode_RGBA;
+		
+		//mpLowLevelGraphics->SetColorWriteActive(false, false, false,false);
+		//mRenderSettings.mChannelMode = eMaterialChannelMode_Z;
+
+		//Set the ambient color
+		mpLowLevelGraphics->SetActiveTextureUnit(0);
+		mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorFunc,eTextureFunc_Modulate);
+		mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorSource0,eTextureSource_Texture);
+		mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorSource1,eTextureSource_Constant);
+		
+		//mpLowLevelGraphics->SetTextureEnv(eTextureParam_AlphaSource1,eTextureSource_Constant);
+
+		mpLowLevelGraphics->SetTextureConstantColor(mRenderSettings.mAmbientColor);
+
+		if(mbLog) Log("Rendering ZBuffer:\n");
+		RenderZ(apCamera);
+		
+        //reset parameters.
+		mpLowLevelGraphics->SetTextureEnv(eTextureParam_ColorSource1,eTextureSource_Previous);
+		//mpLowLevelGraphics->SetTextureEnv(eTextureParam_AlphaSource1,eTextureSource_Previous);
+		
+		////////////////////////////
+		//Render Occlusion Queries
+		mpLowLevelGraphics->SetColorWriteActive(false, false, false,false);
+		mRenderSettings.mChannelMode = eMaterialChannelMode_Z;
+
+		if(mbLog) Log("Rendering Occlusion Queries:\n");
+		mpLowLevelGraphics->SetDepthWriteActive(false);
+		//RenderOcclusionQueries(apCamera);
+
+		////////////////////////////
+		//Render lighting
+		mRenderSettings.mChannelMode = eMaterialChannelMode_RGBA;
+		mpLowLevelGraphics->SetColorWriteActive(true, true, true,true);
+
+		mpLowLevelGraphics->SetDepthTestFunc(eDepthTestFunc_Equal);
+
+		if(mbLog) Log("Rendering Lighting:\n");
+		RenderLight(apCamera);
+
+		////////////////////////////
+		//Render Diffuse
+		if(mbLog) Log("Rendering Diffuse:\n");
+		RenderDiffuse(apCamera);
+
+		////////////////////////////
+		//Render fog
+		if(mbLog) Log("Rendering fog:\n");
+		RenderFog(apCamera);
+
+		////////////////////////////
+		//Render sky box
+		mpLowLevelGraphics->SetDepthTestFunc(eDepthTestFunc_LessOrEqual);
+
+		////////////////////////////
+		if(mbLog) Log("Rendering Skybox:\n");
+		RenderSkyBox(apCamera);
+
+		//Render transparent
+		if(mbLog) Log("Rendering Transperant:\n");
+		RenderTrans(apCamera);
+
+		////////////////////////////
+		//Render debug
+		RenderDebug(apCamera);
 	}
 
 	//-----------------------------------------------------------------------
@@ -1248,6 +1258,7 @@ namespace hpl {
 								{
 									pTex = pMaterial->GetTexture(pMaterial->GetRefractionDiffuseTexture());	
 								}
+								break;
 					}
 
                     if(mRenderSettings.mpTexture[i] != pTex)

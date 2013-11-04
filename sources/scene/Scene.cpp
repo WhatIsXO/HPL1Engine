@@ -32,6 +32,7 @@
 #include "scene/World3D.h"
 #include "graphics/Renderer2D.h"
 #include "graphics/Renderer3D.h"
+#include "graphics/RiftCompositor.h"
 #include "graphics/RendererPostEffects.h"
 #include "graphics/GraphicsDrawer.h"
 #include "graphics/RenderList.h"
@@ -292,13 +293,14 @@ namespace hpl {
 				mpGraphics->GetRenderer2D()->RenderObjects(pCamera2D,mpCurrentWorld2D->GetGridMapLights(),mpCurrentWorld2D);
 			}
 			else
-			{
-				cCamera3D* pCamera3D = static_cast<cCamera3D*>(mpActiveCamera);
-
+			{				
 				if(mpCurrentWorld3D)
 				{
+					/** Render */
+					cCamera3D* pCamera3D = static_cast<cCamera3D*>(mpActiveCamera);
 					START_TIMING(RenderWorld)
-					mpGraphics->GetRenderer3D()->RenderWorld(mpCurrentWorld3D, pCamera3D,afFrameTime);
+					// Provide the projected drawer
+					mpGraphics->GetRenderer3D()->RenderWorld(mpCurrentWorld3D, pCamera3D, afFrameTime);
 					STOP_TIMING(RenderWorld)
 				}
 			}
@@ -307,18 +309,36 @@ namespace hpl {
 			STOP_TIMING(PostSceneDraw)
 			
 			START_TIMING(PostEffects)
-			mpGraphics->GetRendererPostEffects()->Render();
+			if (mpGraphics->GetRiftSupport())
+			{
+				// TODO fix render post effects- problems with screensize, framebuffers etc.
+			//	mpGraphics->GetRiftCompositor()->RenderPostEffects();
+			}
+			else
+			{
+				mpGraphics->GetRendererPostEffects()->Render();
+			}
 			STOP_TIMING(PostEffects)
 		}
 		else
 		{
+			if (mpGraphics->GetRiftSupport())
+			{
+				mpGraphics->GetRiftCompositor()->ClearBuffers();
+			}
 			apUpdater->OnPostSceneDraw();
-			//S
-			//mpGraphics->GetLowLevel()->SetClearColor(cColor(0,1));
-			//mpGraphics->GetLowLevel()->ClearScreen();
 		}
-		mpGraphics->GetDrawer()->DrawAll();
 		
+		if (mpGraphics->GetRiftSupport())
+		{
+			mpGraphics->GetRiftCompositor()->CompositeAndWarpScreen();
+		}
+		else
+		{
+			// Draw straight to screen buffer
+			mpGraphics->GetDrawer()->DrawAll();
+		}
+
 		apUpdater->OnPostGUIDraw();
 	}
 

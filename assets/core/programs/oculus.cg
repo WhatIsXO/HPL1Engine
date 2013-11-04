@@ -1,0 +1,21 @@
+void main(float2 iTexCoord 	: TEXCOORD0,
+	    
+	  out float4 oColor 	: COLOR,
+	
+	  uniform sampler2D RT 		: TEXUNIT0,
+	  
+	  uniform float2 LensCenter,
+	  uniform float2 ScreenCenter,
+	  uniform float2 Scale,
+	  uniform float2 ScaleIn,
+	  uniform float4 HmdWarpParam
+	  )
+{
+   float2 theta = (iTexCoord - LensCenter) * ScaleIn; // Scales to [-1, 1]
+   float rSq = theta.x * theta.x + theta.y * theta.y;
+   float2 rvector = theta * (HmdWarpParam.x + HmdWarpParam.y * rSq + HmdWarpParam.z * rSq * rSq + HmdWarpParam.w * rSq * rSq * rSq);
+   float2 tc = LensCenter + Scale * rvector;
+   
+   oColor = float4(tex2D(RT, tc).rgb,1);
+}
+

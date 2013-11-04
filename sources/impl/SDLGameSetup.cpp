@@ -30,6 +30,8 @@
 #include "impl/LowLevelInputSDL.h"
 #include "impl/LowLevelSoundOpenAL.h"
 #include "impl/LowLevelPhysicsNewton.h"
+#include "impl/RiftHMD.h"
+#include "impl/HMDFactory.h"
 #ifdef INCLUDE_HAPTIC
 #include "impl/LowLevelHapticHaptX.h"
 #endif
@@ -182,4 +184,11 @@ namespace hpl {
 
 	//-----------------------------------------------------------------------
 
+	cHMD* cSDLGameSetup::CreateHMD(cInput* apInput)
+	{
+		mpHMD = HMDFactory::GetInstance()->CreateHMD(apInput);
+		return mpHMD;
+	}
+
+	//-----------------------------------------------------------------------
 }

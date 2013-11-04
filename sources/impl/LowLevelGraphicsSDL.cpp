@@ -162,8 +162,7 @@ namespace hpl {
 	bool cLowLevelGraphicsSDL::Init(int alWidth, int alHeight, int alBpp, int abFullscreen, 
 									int alMultisampling, const tString& asWindowCaption)
 	{
-		mvScreenSize.x = alWidth;
-		mvScreenSize.y = alHeight;
+		mvScreenSize = cVector2l(alWidth, alHeight);
 		mlBpp = alBpp;
 
 		mlMultisampling = alMultisampling;
@@ -203,7 +202,7 @@ namespace hpl {
 		mpScreen = SDL_SetVideoMode( alWidth, alHeight, alBpp, mlFlags);
 		if(mpScreen==NULL){
 			Error("Could not set display mode setting a lower one!\n");
-			mvScreenSize = cVector2l(640,480);
+			mvScreenSize = cVector2l(1280,800);
 			mpScreen = SDL_SetVideoMode( mvScreenSize.x, mvScreenSize.y, alBpp, mlFlags);
 			if(mpScreen==NULL)
 			{
@@ -1234,7 +1233,7 @@ namespace hpl {
 	void cLowLevelGraphicsSDL::SetScissorRect(const cRect2l &aRect)
 	{
 		glScissor(aRect.x, (mvScreenSize.y - aRect.y - 1)-aRect.h, aRect.w, aRect.h);
-	}
+	}	
 	
 	//-----------------------------------------------------------------------
 	

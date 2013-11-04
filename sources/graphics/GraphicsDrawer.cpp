@@ -455,4 +455,49 @@ namespace hpl {
 
     //-----------------------------------------------------------------------
 
+	////////////////////////////////////////////////////////////////////////
+	/// cProjectedGraphicsDrawer
+/*
+	cProjectedGraphicsDrawer::cProjectedGraphicsDrawer(iLowLevelGraphics *apLowLevelGraphics, cMaterialHandler* apMaterialHandler, cResources* apResources)
+		: cGraphicsDrawer(apLowLevelGraphics, apMaterialHandler, apResources)
+	{
+		mpFramebuffer = mpLowLevelGraphics->CreateTexture(cVector2l(800,600), 32, cColor(0,0,0,0), false, eTextureType_RenderTarget, eTextureTarget_2D);
+	}
+
+	cProjectedGraphicsDrawer::~cProjectedGraphicsDrawer()
+	{
+		hplDelete(mpFramebuffer);
+	}
+
+	*
+	 * Project the rendered framebuffer into the scene on a quad.
+
+	void cProjectedGraphicsDrawer::ProjectIntoScene()
+	{
+		// Make quad coords
+		tVertexVec vGraphicsDrawerQuad;
+		vGraphicsDrawerQuad.push_back( cVertex(cVector3f(0,0,depth),cVector2f(0,1),cColor(1,1.0f) ) );
+		vGraphicsDrawerQuad.push_back( cVertex(cVector3f(640,0,depth),cVector2f(1, 1),cColor(1,1.0f)) );
+		vGraphicsDrawerQuad.push_back( cVertex(cVector3f(640,480,depth),cVector2f(1, 0),cColor(1,1.0f)) );
+		vGraphicsDrawerQuad.push_back( cVertex(cVector3f(0,480,depth),cVector2f(0, 0),cColor(1,1.0f)) );
+
+		// Draw quad in scene
+		mpLowLevelGraphics->SetTexture(0, mpFramebuffer);
+		mpLowLevelGraphics->DrawQuad(vGraphicsDrawerQuad);
+	}
+
+	*
+	 * Renders the graphics to a framebuffer.
+
+	void cProjectedGraphicsDrawer::DrawAll()
+	{
+		// Make framebuffer active
+		mpLowLevelGraphics->SetRenderTarget(mpFramebuffer);
+
+		// Defer to superclass
+		cGraphicsDrawer::DrawAll();
+
+		//Restore default render context
+		mpLowLevelGraphics->SetRenderTarget(NULL);
+	}*/
 }

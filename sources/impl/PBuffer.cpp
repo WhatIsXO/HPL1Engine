@@ -122,6 +122,8 @@ namespace hpl {
 		if(lFormatNum==0){
 			Error("Couldn't find any pixel format!\n");
 			return false;
+			// TODO: Try to choose pixel format using wgl, then windows choosepixelformat,
+			// if still crap, then bail
 		}
 				
 		//Create the buffer

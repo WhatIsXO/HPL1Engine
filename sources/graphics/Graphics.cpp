@@ -24,8 +24,10 @@
 #include "graphics/GraphicsDrawer.h"
 #include "graphics/Renderer2D.h"
 #include "graphics/Renderer3D.h"
+#include "graphics/RendererStereo3D.h"
 #include "graphics/RendererPostEffects.h"
 #include "graphics/RenderList.h"
+#include "graphics/RiftCompositor.h"
 #include "graphics/MaterialHandler.h"
 #include "graphics/MeshCreator.h"
 #include "game/Updateable.h"
@@ -53,6 +55,7 @@
 #include "graphics/Material_Alpha.h"
 #include "graphics/Material_EnvMap_Reflect.h"
 #include "graphics/Material_Water.h"
+#include "input/HMD.h"
 
 namespace hpl {
 
@@ -89,6 +92,7 @@ namespace hpl {
 		hplDelete(mpMeshCreator);
 		hplDelete(mpMaterialHandler);
 		hplDelete(mpRenderList);
+		hplDelete(mpRiftCompositor)
 
 		Log("--------------------------------------------------------\n\n");
 	}
@@ -100,10 +104,10 @@ namespace hpl {
 	//////////////////////////////////////////////////////////////////////////
 
 	//-----------------------------------------------------------------------
-	
-	bool cGraphics::Init(	int alWidth, int alHeight, int alBpp, int abFullscreen, 
-							int alMultisampling,const tString &asWindowCaption, 
-							cResources* apResources)
+
+	bool cGraphics::Init(	int alWidth, int alHeight, int alBpp, int abFullscreen, int alMultisampling,
+							const tString &asWindowCaption, cResources* apResources,
+							cHMD* apHMD, int alFramebufferWidth, int alFramebufferHeight)
 	{
 		Log("Initializing Graphics Module\n");
 		Log("--------------------------------------------------------\n");
@@ -121,11 +125,24 @@ namespace hpl {
 		mpRenderer2D = hplNew( cRenderer2D,(mpLowLevelGraphics,apResources,mpDrawer));
 		mpRenderList = hplNew( cRenderList,(this));
 		mpMeshCreator = hplNew( cMeshCreator,(mpLowLevelGraphics, apResources));
-		mpRenderer3D = hplNew( cRenderer3D,(mpLowLevelGraphics,apResources,mpMeshCreator,mpRenderList));
-		mpRendererPostEffects = hplNew( cRendererPostEffects,(mpLowLevelGraphics,apResources,mpRenderList,
-														mpRenderer3D));
-		mpRenderer3D->SetPostEffects(mpRendererPostEffects);
+		mpHMD = apHMD;
+
+		if (mpHMD)
+		{
+			mpRenderer3D = hplNew( cRendererStereo3D, (mpLowLevelGraphics,apResources,mpMeshCreator,mpRenderList, mpHMD) );
+		}
+		else
+		{
+			mpRenderer3D = hplNew( cRenderer3D, (mpLowLevelGraphics,apResources,mpMeshCreator,mpRenderList) );
+		}
 		
+		mpRendererPostEffects = hplNew( cRendererPostEffects,(mpLowLevelGraphics,apResources,mpRenderList, mpRenderer3D));
+		mpRenderer3D->SetPostEffects(mpRendererPostEffects);
+
+		if (mpHMD)
+		{
+			mpRiftCompositor = hplNew( cRiftCompositor, (this, apResources) );
+		}
 		
 		//Add all the materials.
 		//2D
@@ -179,7 +196,23 @@ namespace hpl {
 	{
 		return mpRenderer2D;
 	}
-	
+
+	cHMD* cGraphics::GetHMD()
+	{
+		return mpHMD;
+	}
+
+	bool cGraphics::GetRiftSupport()
+	{
+		if (mpHMD)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 	//-----------------------------------------------------------------------
 
 }
