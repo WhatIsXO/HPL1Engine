@@ -1,0 +1,10 @@
+void main( float2 texCoord : TEXCOORD0,
+		   out float4 outColor  : COLOR0,
+		   uniform sampler2D texture : TEXUNIT0,
+		   uniform sampler2D textureWarp : TEXUNIT1
+		   ) 
+{
+   float4 c = tex2D(textureWarp, texCoord);
+   float2 realCoord = float2(c.r,c.g);
+   outColor = tex2D(texture, realCoord);
+}

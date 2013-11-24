@@ -1,8 +1,6 @@
-void main(float2 iTexCoord 	: TEXCOORD0,
-	    
-	  out float4 oColor 	: COLOR,
-	
-	  uniform sampler2D RT 		: TEXUNIT0,
+void main(
+	  float2 iTexCoord 	: TEXCOORD0,
+	  out float4 outputCoord,
 	  
 	  uniform float2 LensCenter,
 	  uniform float2 ScreenCenter,
@@ -17,7 +15,5 @@ void main(float2 iTexCoord 	: TEXCOORD0,
    							 HmdWarpParam.z * rSq * rSq + 
    							 HmdWarpParam.w * rSq * rSq * rSq);
    float2 tc = LensCenter + Scale * rvector;
-   
-   oColor = float4(tex2D(RT, tc).rgb,1);
+   outputCoord = float4(tc.x, tc.y,0,0);   
 }
-
