@@ -2,7 +2,7 @@
  * RiftCompositor.h
  *
  *  Created on: 18/10/2013
- *      Author: prlpcf
+ *      Author: WhatIsXO
  */
 
 #ifndef RIFTCOMPOSITOR_H_
@@ -19,13 +19,13 @@ namespace hpl
 	class iGpuProgram;
 	class cGraphicsDrawer;
 	class cGraphics;
-	class cRendererPostEffects;
+	class iRendererPostEffects;
 	class cHMD;
 
 class cRiftCompositor
 {
 public:
-	cRiftCompositor(cGraphics* apGraphics, cResources* apResources);
+	cRiftCompositor(cGraphics* apGraphics, cResources* apResources, bool pregenWarp);
 	virtual ~cRiftCompositor();
 
 	void RenderPostEffects();
@@ -33,22 +33,42 @@ public:
 
 	void ClearBuffers();
 
-private:
+	void SetPregenerateWarp(bool pregenWarp) { mbPregenWarp = pregenWarp; }
 
-	void DrawOverlayQuad(iTexture* source, iTexture* target);
+private:
+	void DrawGraphics();
+	void DrawOverlayQuad(iTexture* source, iTexture* target, tVertexVec quad);
+	void DrawOverlayQuad(iTexture* source, iTexture* target, tVertexVec quad, OVR::Util::Render::StereoEyeParams eyeParams);
+	void DrawScreenQuad(iTexture* source, iTexture* target, tVertexVec quad);
+	void PregenerateWarpTexture();
+	cMatrixf toHplMatrix(Matrix4f matrix);
+
+	bool mbPregenWarp;
 
 	cRendererStereo3D* mpRenderer3D;
 	iLowLevelGraphics* mpLowLevelGraphics;
 	cGraphicsDrawer* mpGraphicsDrawer;
-	cRendererPostEffects* mpPostEffects;
+	cGraphicsDrawer* mpOverlayGraphicsDrawer;
+	iRendererPostEffects* mpPostEffects;
 	cResources* mpResources;
 	cHMD* mpHMD;
+	OVR::Util::Render::StereoConfig stereoConfig;
 
-	iTexture* mpOverlayRenderTarget;
+	iTexture* mpLeftWarpComputeTexture;
+	iTexture* mpRightWarpComputeTexture;
+	iTexture* mpOverlayDrawerRenderTarget;
+	iTexture* mpGraphicsDrawerRenderTarget;
 	iTexture* mpLeftFramebuffer;
 	iTexture* mpRightFramebuffer;
-	iGpuProgram *mpStereoWarpFragProgram;
+	iGpuProgram *mpRecalculatingStereoWarpFragProgram;
+	iGpuProgram *mpStereoWarpGenerateTextureFragProgram;
+	iGpuProgram *mpStereoWarpTextureLookupFragProgram;
+
+	tVertexVec vDirectQuadVec;
 	tVertexVec vOverlayQuadVec;
+
+	tVertexVec vLeftQuadVec;
+	tVertexVec vRightQuadVec;
 };
 
 } /* namespace hpl */

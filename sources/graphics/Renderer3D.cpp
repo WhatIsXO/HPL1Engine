@@ -37,7 +37,7 @@
 #include "math/BoundingVolume.h"
 #include "resources/GpuProgramManager.h"
 #include "graphics/GPUProgram.h"
-#include "graphics/RendererPostEffects.h"
+#include "graphics/RendererPostEffectsItf.h"
 
 namespace hpl {
 
@@ -512,9 +512,6 @@ namespace hpl {
 
 		mpLowLevelGraphics->SetColor(cColor(1,1,1,1));
 
-		// Setup viewport and buffer here
-		// by adding new method to lowlevelgraphics
-
 		mRenderSettings.mpCamera = apCamera;
 
 		for(int i=0; i<MAX_TEXTUREUNITS; ++i)
@@ -558,7 +555,7 @@ namespace hpl {
 
 		if(mbLog) Log("Rendering Occlusion Queries:\n");
 		mpLowLevelGraphics->SetDepthWriteActive(false);
-		//RenderOcclusionQueries(apCamera);
+		RenderOcclusionQueries(apCamera);
 
 		////////////////////////////
 		//Render lighting
@@ -1033,9 +1030,9 @@ namespace hpl {
 
 				//////////////////////////////
 				//Get Screen Clip space
-				cVector2f vScreenSizeFloat = mpLowLevelGraphics->GetScreenSize();
-				cVector2l vScreenSize(	(int)mpLowLevelGraphics->GetScreenSize().x,
-										(int)mpLowLevelGraphics->GetScreenSize().y);
+				cVector2f vScreenSizeFloat = mpLowLevelGraphics->GetViewportSize();
+				cVector2l vScreenSize(	(int)mpLowLevelGraphics->GetViewportSize().x,
+										(int)mpLowLevelGraphics->GetViewportSize().y);
 				iTexture *pScreen = mpPostEffects->GetFreeScreenTexture();
 
 				//Get the cliprect objects bounding volume
@@ -1090,7 +1087,7 @@ namespace hpl {
 										
 					////////////////////////////////////////////////
 					//Clear alpha using 2D quad.
-					mpLowLevelGraphics->SetOrthoProjection(mpLowLevelGraphics->GetScreenSize(),-1000,1000);
+					mpLowLevelGraphics->SetOrthoProjection(mpLowLevelGraphics->GetViewportSize(),-1000,1000);
 					mpLowLevelGraphics->SetIdentityMatrix(eMatrix_ModelView);
 
 					if(bHasClipRect)
@@ -1227,7 +1224,7 @@ namespace hpl {
 				
 				mRenderSettings.mpFragmentProgram = pRefractFragProgram;
 
-				pRefractFragProgram->SetVec2f("screenSize", mpLowLevelGraphics->GetScreenSize());
+				pRefractFragProgram->SetVec2f("screenSize", mpLowLevelGraphics->GetViewportSize());
 				
 				if(bSpecial)
 				{

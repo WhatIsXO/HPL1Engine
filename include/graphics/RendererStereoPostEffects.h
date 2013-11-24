@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with HPL1 Engine.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef HPL_RENDERER_POST_EFFECTS_H
-#define HPL_RENDERER_POST_EFFECTS_H
+#ifndef HPL_RENDERER_STEREO_POST_EFFECTS_H
+#define HPL_RENDERER_STEREO_POST_EFFECTS_H
 
 #include <set>
 #include <list>
@@ -25,11 +25,10 @@
 
 #include "math/MathTypes.h"
 #include "graphics/GraphicsTypes.h"
-#include "graphics/RendererPostEffectsItf.h"
+#include "graphics/RendererPostEffects.h"
+#include "graphics/RendererStereo3D.h"
 
 namespace hpl {
-
-#define kFilterProgramNum (1)
 	
 	class iLowLevelGraphics;
 	class iLowLevelResources;
@@ -38,45 +37,26 @@ namespace hpl {
 	class iTexture;
 	class cGpuProgramManager;
 	class cRenderList;
-	class cRenderer3D;
-
-	enum ePostEffectFilter
-	{
-		ePostEffectFilter_Offset,
-		ePostEffectFilter_LastEnum
-	};
-
-	enum ePostEffectProgram
-	{
-		ePostEffectProgram_Offset,
-		ePostEffectProgram_LastEnum
-	};
-	
 	class cResources;
-	
-	class cRendererPostEffects : public iRendererPostEffects
+
+	class cRendererFramebufferPostEffects : public iRendererPostEffects
 	{
 	public:
-		cRendererPostEffects(iLowLevelGraphics *apLowLevelGraphics,cResources* apResources, 
-							cRenderList *apRenderList, cRenderer3D *apRenderer3D);
-		~cRendererPostEffects();
-		
+		cRendererFramebufferPostEffects(iLowLevelGraphics *apLowLevelGraphics,cResources* apResources,
+							cRenderList *apRenderList, iTexture* apTargetFramebuffer);
+		~cRendererFramebufferPostEffects();
+
 		/**
 		 * Render post effects, called by cScene
 		 */
 		void Render();
-		
-		iTexture* GetScreenBuffer(int alNum){ return mpScreenBuffer[alNum];}
+
+		void RenderBlurTexture(iTexture *apDestination, iTexture *apSource,float afBlurAmount);
 
 		iTexture* GetFreeScreenTexture(){ return mpScreenBuffer[mImageTrailData.mlCurrentBuffer==0?1:0];}
-		
 
 	private:
-		void RenderBlurTexture(iTexture *apDestination, iTexture *apSource,float afBlurAmount);
-		void RenderImageTrail();
-		void RenderBloom();	
-		void RenderMotionBlur();
-		void RenderDepthOfField();
+		void RenderBloom();
 
 		iLowLevelGraphics *mpLowLevelGraphics;
 		iLowLevelResources *mpLowLevelResources;
@@ -86,29 +66,57 @@ namespace hpl {
 
 		cRenderList *mpRenderList;
 
-		cVector2f mvScreenSize;
-		
-		iTexture* mpScreenBuffer[2];
+		cVector2f mvFrameSize;
 
 		iGpuProgram *mpBlurVP;
 		iGpuProgram *mpBlur2dFP;
 		iGpuProgram *mpBlurRectFP;
 		bool mbBlurFallback;
 
+		iTexture* mpScreenBuffer[2];
 		iGpuProgram *mpBloomVP;
 		iGpuProgram *mpBloomFP;
 
 		iTexture *mpBloomBlurTexture;
 
-		iGpuProgram *mpMotionBlurVP;
-		iGpuProgram *mpMotionBlurFP;
+		iTexture* mpTargetFramebuffer;
 
-		iGpuProgram *mpDepthOfFieldVP;
-		iGpuProgram *mpDepthOfFieldFP;
-		iTexture *mpDofBlurTexture;
-		
 		tVertexVec mvTexRectVtx;
+	};
+
+	class cRendererStereoPostEffects : public iRendererPostEffects
+	{
+	public:
+		cRendererStereoPostEffects(iLowLevelGraphics *apLowLevelGraphics,cResources* apResources,
+							cRenderList *apRenderList, cRendererStereo3D* apRendererStereo3D);
+		~cRendererStereoPostEffects();
+
+		/**
+		 * Render post effects, called by cScene
+		 */
+		void Render();
+
+		void SetStereoMode(StereoMode aMode) { mMode = aMode; }
+
+		void SetActive(bool abX);
+		bool GetActive();
+
+		void SetBloomActive(bool abX);
+		bool GetBloomActive();
+
+		void SetBloomSpread(float afX);
+		float GetBloomSpread();
+
+		iTexture* GetFreeScreenTexture();
+
+	private:
+
+		cRendererFramebufferPostEffects* mpLeftPostEffects;
+		cRendererFramebufferPostEffects* mpRightPostEffects;
+
+		StereoMode mMode;
 	};
 
 };
 #endif // HPL_RENDERER_POST_EFFECTS_H
+

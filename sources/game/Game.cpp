@@ -210,7 +210,12 @@ namespace hpl {
 		mpHaptic = NULL;
 #endif
 
-		mpHMD = mpGameSetup->CreateHMD(mpInput);
+		mbRiftSupport = aVars.GetBool("RiftSupport", false);
+		mbRiftPregenWarp = aVars.GetBool("RiftPregenWarp", false);
+		if (mbRiftSupport)
+			mpHMD = mpGameSetup->CreateHMD(mpInput);
+		else
+			mpHMD = NULL;
 
 		Log(" Creating scene module\n");
 		mpScene = mpGameSetup->CreateScene(mpGraphics, mpResources, mpSound,mpPhysics,mpSystem,mpAI,mpHaptic);
@@ -221,8 +226,6 @@ namespace hpl {
 		//Init the resources
 		mpResources->Init(mpGraphics,mpSystem, mpSound,mpScene,mpGui);
 
-		mbRiftSupport = aVars.GetBool("RiftSupport", false);
-
 		//Init the graphics
 		mpGraphics->Init(aVars.GetInt("ScreenWidth",800),
 			aVars.GetInt("ScreenHeight",600),
@@ -232,8 +235,7 @@ namespace hpl {
 			aVars.GetString("WindowCaption"),
 			mpResources,
 			mpHMD,
-			aVars.GetInt("RiftFramebufferWidth", 1600),
-			aVars.GetInt("RiftFramebufferHeight", 1000));
+			mbRiftPregenWarp);
 
 		//Init Sound
 		mpSound->Init(mpResources, aVars.GetBool("UseSoundHardware",true), 
@@ -276,7 +278,7 @@ namespace hpl {
 		mpUpdater->AddGlobalUpdate(mpAI);
 		mpUpdater->AddGlobalUpdate(mpGui);
 		mpUpdater->AddGlobalUpdate(mpResources);
-		mpUpdater->AddGlobalUpdate(mpHMD);
+		if(mpHMD)mpUpdater->AddGlobalUpdate(mpHMD);
 		if(mpHaptic) mpUpdater->AddGlobalUpdate(mpHaptic);
 
 		//Setup the "default" updater container
@@ -417,7 +419,7 @@ namespace hpl {
 			
 			if(mbIsUpdated)
 			{
-				mpScene->UpdateRenderList(mfFrameTime);
+				//mpScene->UpdateRenderList(mfFrameTime);
 				if(mbLimitFPS==false) mbIsUpdated = false;
 			}
 			
@@ -433,7 +435,9 @@ namespace hpl {
 				
 				//Draw this frame
 				//unsigned long lFTime = GetApplicationTime();
+				// Non scene based drawing using GraphicsDrawer
 				mpUpdater->OnDraw();
+
 				mpScene->Render(mpUpdater,mfFrameTime);
 				//if(mpScene->GetDrawScene()) LogUpdate("FrameTime: %d ms\n", GetApplicationTime() - lFTime);
 				
@@ -576,6 +580,12 @@ namespace hpl {
 
 	//-----------------------------------------------------------------------
 
+	cHMD* cGame::GetHMD()
+	{
+		return mpHMD;
+	}
+
+	//-----------------------------------------------------------------------
 
 	cUpdater* cGame::GetUpdater()
 	{

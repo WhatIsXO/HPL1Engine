@@ -21,6 +21,7 @@
 
 #include "graphics/Texture.h"
 #include "impl/PBuffer.h"
+#include "graphics/FrameBufferObject.h"
 #include "impl/LowLevelGraphicsSDL.h"
 #include "impl/SDLBitmap2D.h"
 
@@ -58,7 +59,7 @@ namespace hpl {
 
 		float GetGamma(){return 0;}
 		void SetGamma(float afGamma){}
-		int GetHandle(){return (int) mvTextureHandles[0];}
+		unsigned int GetHandle(){return mvTextureHandles[0];}
 
 		void SetFilter(eTextureFilter aFilter);
 		void SetAnisotropyDegree(float afX);
@@ -81,6 +82,7 @@ namespace hpl {
 
 		unsigned int GetTextureHandle();
 		cPBuffer* GetPBuffer(){ return mpPBuffer; }
+		iFrameBufferObject* getFrameBufferObject() { return mpFrameBufferObject; }
 
 	private:
 		bool CreateFromBitmapToHandle(iBitmap2D* pBmp, int alHandleIdx);
@@ -101,6 +103,7 @@ namespace hpl {
 		float mfTimeDir;
 
 		cPBuffer *mpPBuffer;
+		iFrameBufferObject *mpFrameBufferObject;
 	};
 
 };

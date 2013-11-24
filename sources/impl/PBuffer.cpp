@@ -44,36 +44,36 @@ namespace hpl {
 
 		//Now we chose the pixel format attributes:
 		//Format:
-		mvAttribFormat.push_back(WGL_DRAW_TO_PBUFFER_ARB);
-		mvAttribFormat.push_back(true);
-		
-		mvAttribFormat.push_back(WGL_BIND_TO_TEXTURE_RGBA_ARB);
-		mvAttribFormat.push_back(true);
-		//Use this if the texture is a rectangle: (nVidia only!)
-		//mvAttribFormat.push_back(WGL_BIND_TO_TEXTURE_RECTANGLE_RGBA_NV);
-		//mvAttribFormat.push_back(true);
-
+		mvAttribFormat.push_back(WGL_COLOR_BITS_ARB);
+		mvAttribFormat.push_back(32);
 		mvAttribFormat.push_back(WGL_DEPTH_BITS_ARB);
 		mvAttribFormat.push_back(24);
 		mvAttribFormat.push_back(WGL_STENCIL_BITS_ARB);
 		mvAttribFormat.push_back(8);
-		mvAttribFormat.push_back(WGL_COLOR_BITS_ARB);
-		mvAttribFormat.push_back(32);
+		mvAttribFormat.push_back(WGL_DRAW_TO_PBUFFER_ARB);
+		mvAttribFormat.push_back(true);
+		mvAttribFormat.push_back(WGL_BIND_TO_TEXTURE_RGBA_ARB);
+		mvAttribFormat.push_back(true);
+		
+		//Use this if the texture is a rectangle: (nVidia only!)
+		//mvAttribFormat.push_back(WGL_BIND_TO_TEXTURE_RECTANGLE_RGBA_NV);
+		//mvAttribFormat.push_back(true);
+
 		
 		//Buffer:
-		mvAttribBuffer.push_back(WGL_PBUFFER_LARGEST_ARB);
-		mvAttribBuffer.push_back(true);
 		mvAttribBuffer.push_back(WGL_TEXTURE_FORMAT_ARB);
 		mvAttribBuffer.push_back(WGL_TEXTURE_RGBA_ARB);
-		
 		mvAttribBuffer.push_back(WGL_TEXTURE_TARGET_ARB);
 		mvAttribBuffer.push_back(WGL_TEXTURE_2D_ARB);
+		mvAttribBuffer.push_back(WGL_PBUFFER_LARGEST_ARB);
+		mvAttribBuffer.push_back(true);
+		
 		//Use this if the texture is a rectangle: (nVidia only!)
 		//mvAttribBuffer.push_back(WGL_TEXTURE_RECTANGLE_NV);
 		
 		
-		mvAttribBuffer.push_back(WGL_MIPMAP_TEXTURE_ARB);
-		mvAttribBuffer.push_back(false);
+		//mvAttribBuffer.push_back(WGL_MIPMAP_TEXTURE_ARB);
+		//mvAttribBuffer.push_back(false);
 
 		//Use this if you have mipmaps:
 		/*mvAttribBuffer.push_back(WGL_MIPMAP_LEVEL_ARB);
@@ -121,7 +121,7 @@ namespace hpl {
 		wglChoosePixelFormatARB(CurrentHdc, &mvAttribFormat[0], NULL, 1, &lFormat, &lFormatNum);
 		if(lFormatNum==0){
 			Error("Couldn't find any pixel format!\n");
-			return false;
+			exit(0);
 			// TODO: Try to choose pixel format using wgl, then windows choosepixelformat,
 			// if still crap, then bail
 		}

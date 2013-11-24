@@ -253,7 +253,6 @@ namespace hpl {
 				m_mtxView = cMath::MatrixMul(cMath::MatrixRotateX(-mfPitch), m_mtxView);
 				m_mtxView = cMath::MatrixMul(cMath::MatrixRotateZ(-mfRoll), m_mtxView);
 			}
-
 			mbViewUpdated = false;
 		}
 		return m_mtxView;

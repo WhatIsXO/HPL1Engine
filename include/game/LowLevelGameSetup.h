@@ -46,6 +46,7 @@ namespace hpl {
 		virtual cPhysics* CreatePhysics()=0;
 		virtual cAI* CreateAI()=0;
 		virtual cHaptic* CreateHaptic()=0;
+		virtual cHMD* CreateHMD(cInput* apInput) = 0;
 	};
 };
 #endif // HPL_LOWLEVELGAMESETUP_H

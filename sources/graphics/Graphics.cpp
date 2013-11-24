@@ -25,7 +25,9 @@
 #include "graphics/Renderer2D.h"
 #include "graphics/Renderer3D.h"
 #include "graphics/RendererStereo3D.h"
+#include "graphics/RendererStereoPostEffects.h"
 #include "graphics/RendererPostEffects.h"
+#include "graphics/RendererPostEffectsItf.h"
 #include "graphics/RenderList.h"
 #include "graphics/RiftCompositor.h"
 #include "graphics/MaterialHandler.h"
@@ -92,7 +94,7 @@ namespace hpl {
 		hplDelete(mpMeshCreator);
 		hplDelete(mpMaterialHandler);
 		hplDelete(mpRenderList);
-		hplDelete(mpRiftCompositor)
+		if (mpRiftCompositor) hplDelete(mpRiftCompositor);
 
 		Log("--------------------------------------------------------\n\n");
 	}
@@ -106,8 +108,7 @@ namespace hpl {
 	//-----------------------------------------------------------------------
 
 	bool cGraphics::Init(	int alWidth, int alHeight, int alBpp, int abFullscreen, int alMultisampling,
-							const tString &asWindowCaption, cResources* apResources,
-							cHMD* apHMD, int alFramebufferWidth, int alFramebufferHeight)
+							const tString &asWindowCaption, cResources* apResources, cHMD* apHMD, bool pregenWarp)
 	{
 		Log("Initializing Graphics Module\n");
 		Log("--------------------------------------------------------\n");
@@ -126,22 +127,32 @@ namespace hpl {
 		mpRenderList = hplNew( cRenderList,(this));
 		mpMeshCreator = hplNew( cMeshCreator,(mpLowLevelGraphics, apResources));
 		mpHMD = apHMD;
+		mbPregenWarp = pregenWarp;
 
 		if (mpHMD)
 		{
+			// Specialised rendering, and seperate graphics drawer for overlays
 			mpRenderer3D = hplNew( cRendererStereo3D, (mpLowLevelGraphics,apResources,mpMeshCreator,mpRenderList, mpHMD) );
+			mpRendererPostEffects = hplNew( cRendererStereoPostEffects, (mpLowLevelGraphics, apResources, mpRenderList, (cRendererStereo3D*)mpRenderer3D));
+			mpOverlayDrawer = hplNew( cGraphicsDrawer,(mpLowLevelGraphics,mpMaterialHandler,apResources));
+//			mpLowLevelGraphics->SetViewportSize(cVector2f((float)mpHMD->getHMDInfo().HResolution/2, (float)mpHMD->getHMDInfo().VResolution));
 		}
 		else
 		{
 			mpRenderer3D = hplNew( cRenderer3D, (mpLowLevelGraphics,apResources,mpMeshCreator,mpRenderList) );
+			mpRendererPostEffects = hplNew( cRendererPostEffects,(mpLowLevelGraphics,apResources,mpRenderList, mpRenderer3D));
+			mpOverlayDrawer = mpDrawer;
 		}
 		
-		mpRendererPostEffects = hplNew( cRendererPostEffects,(mpLowLevelGraphics,apResources,mpRenderList, mpRenderer3D));
 		mpRenderer3D->SetPostEffects(mpRendererPostEffects);
 
 		if (mpHMD)
 		{
-			mpRiftCompositor = hplNew( cRiftCompositor, (this, apResources) );
+			mpRiftCompositor = hplNew( cRiftCompositor, (this, apResources, pregenWarp) );
+		}
+		else
+		{
+			mpRiftCompositor = NULL;
 		}
 		
 		//Add all the materials.
@@ -188,6 +199,13 @@ namespace hpl {
 	cGraphicsDrawer* cGraphics::GetDrawer()
 	{
 		return mpDrawer;
+	}
+
+	//-----------------------------------------------------------------------
+
+	cGraphicsDrawer* cGraphics::GetOverlayDrawer()
+	{
+		return mpOverlayDrawer;
 	}
 
 	//-----------------------------------------------------------------------

@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with HPL1 Engine.  If not, see <http://www.gnu.org/licenses/>.
  */
+#define UPDATE_TIMING_ENABLED
+
 #include "scene/Scene.h"
 #include "game/Updater.h"
 #include "system/LowLevelSystem.h"
@@ -115,8 +117,8 @@ namespace hpl {
 	cCamera3D* cScene::CreateCamera3D(eCameraMoveMode aMoveMode)
 	{
 		cCamera3D *pCamera = hplNew( cCamera3D, () );
-		pCamera->SetAspect(mpGraphics->GetLowLevel()->GetScreenSize().x /
-							mpGraphics->GetLowLevel()->GetScreenSize().y);
+		pCamera->SetAspect(mpGraphics->GetLowLevel()->GetViewportSize().x /
+							mpGraphics->GetLowLevel()->GetViewportSize().y);
 
 		//Add Camera to list
 		mlstCamera.push_back(pCamera);
@@ -296,12 +298,33 @@ namespace hpl {
 			{				
 				if(mpCurrentWorld3D)
 				{
-					/** Render */
 					cCamera3D* pCamera3D = static_cast<cCamera3D*>(mpActiveCamera);
-					START_TIMING(RenderWorld)
-					// Provide the projected drawer
-					mpGraphics->GetRenderer3D()->RenderWorld(mpCurrentWorld3D, pCamera3D, afFrameTime);
-					STOP_TIMING(RenderWorld)
+					if (mpGraphics->GetRiftSupport())
+					{
+						cRendererStereo3D* rendererStereo = static_cast<cRendererStereo3D *> (mpGraphics->GetRenderer3D());
+						START_TIMING(RenderWorld)
+						// For each eye: augment camera, determine visible objects, render
+						// 	this affects all sorts of stuff - stencil shadows in particular
+						rendererStereo->SetCameraToEye(pCamera3D, StereoMode_Left);
+						UpdateRenderList(afFrameTime);
+						mpGraphics->GetRenderer3D()->RenderWorld(mpCurrentWorld3D, pCamera3D, afFrameTime);
+						rendererStereo->RestoreCamera(pCamera3D);
+
+						rendererStereo->SetCameraToEye(pCamera3D, StereoMode_Right);
+						UpdateRenderList(afFrameTime);
+						mpGraphics->GetRenderer3D()->RenderWorld(mpCurrentWorld3D, pCamera3D, afFrameTime);
+						rendererStereo->RestoreCamera(pCamera3D);
+						STOP_TIMING(RenderWorld)
+					}
+					else
+					{
+						START_TIMING(RenderWorld)
+						UpdateRenderList(afFrameTime);
+						/** Render */
+						mpGraphics->GetRenderer3D()->RenderWorld(mpCurrentWorld3D, pCamera3D, afFrameTime);
+						// Provide the projected drawer
+						STOP_TIMING(RenderWorld)
+					}
 				}
 			}
 			START_TIMING(PostSceneDraw)
@@ -312,7 +335,8 @@ namespace hpl {
 			if (mpGraphics->GetRiftSupport())
 			{
 				// TODO fix render post effects- problems with screensize, framebuffers etc.
-			//	mpGraphics->GetRiftCompositor()->RenderPostEffects();
+				// really only need bloom as motion blur, image trail and depth of field may cause motion sickness
+				mpGraphics->GetRiftCompositor()->RenderPostEffects();
 			}
 			else
 			{
@@ -329,14 +353,16 @@ namespace hpl {
 			apUpdater->OnPostSceneDraw();
 		}
 		
+		// Rift compositor directs graphics drawing to offscreen pbuffers
 		if (mpGraphics->GetRiftSupport())
 		{
 			mpGraphics->GetRiftCompositor()->CompositeAndWarpScreen();
 		}
 		else
 		{
-			// Draw straight to screen buffer
+			// Draw straight to screen framebuffer for regular game
 			mpGraphics->GetDrawer()->DrawAll();
+			mpGraphics->GetOverlayDrawer()->DrawAll();
 		}
 
 		apUpdater->OnPostGUIDraw();

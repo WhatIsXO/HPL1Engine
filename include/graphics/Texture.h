@@ -32,6 +32,8 @@ namespace hpl {
 	{
 		eTextureType_Normal,
 		eTextureType_RenderTarget,
+		eTextureType_RenderTarget_FBO,
+		eTextureType_RenderTarget_RGBA16F,
 		eTextureType_LastEnum
 	};
 
@@ -143,7 +145,7 @@ namespace hpl {
 		
 		virtual float GetGamma()=0;
 		virtual void SetGamma(float afGamma)=0;
-		virtual int GetHandle()=0;
+		virtual unsigned int GetHandle()=0;
 
 		virtual bool HasAlpha(){return false;}
 

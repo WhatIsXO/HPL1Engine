@@ -39,6 +39,7 @@ namespace hpl {
 
 	cRendererPostEffects::cRendererPostEffects(iLowLevelGraphics *apLowLevelGraphics,cResources* apResources,
 												cRenderList *apRenderList,cRenderer3D *apRenderer3D)
+						 :iRendererPostEffects()
 	{
 		mpLowLevelGraphics = apLowLevelGraphics;
 		mpLowLevelResources = apResources->GetLowLevel();
@@ -47,7 +48,7 @@ namespace hpl {
 
 		mpGpuManager = mpResources->GetGpuProgramManager();
 		
-		mvScreenSize = mpLowLevelGraphics->GetScreenSize();
+		mvScreenSize = mpLowLevelGraphics->GetViewportSize();
 
 		mpRenderList = apRenderList;
 
@@ -229,22 +230,7 @@ namespace hpl {
 	//////////////////////////////////////////////////////////////////////////
 	// PUBLIC METHODS
 	//////////////////////////////////////////////////////////////////////////
-	
-	//-----------------------------------------------------------------------
 
-	void cRendererPostEffects::SetBloomActive(bool abX)
-	{
-		mbBloomActive = abX;
-	}
-
-	//-----------------------------------------------------------------------
-
-	void cRendererPostEffects::SetMotionBlurActive(bool abX)
-	{
-		mbMotionBlurActive = abX;
-		mbMotionBlurFirstTime = true;
-	}
-	
 	//-----------------------------------------------------------------------
 	
 	void cRendererPostEffects::Render()
@@ -259,7 +245,7 @@ namespace hpl {
 			return;
 		}
 
-		mvScreenSize = mpLowLevelGraphics->GetScreenSize();
+		mvScreenSize = mpLowLevelGraphics->GetViewportSize();
 		
 		RenderDepthOfField();
 		RenderMotionBlur();
@@ -338,7 +324,7 @@ namespace hpl {
 		{
 			mpBlurVP->SetFloat("xOffset",0);
 			mpBlurVP->SetFloat("yOffset",1);
-			mpBlurVP->SetFloat("amount",(1 / pLowLevel->GetScreenSize().x) * afBlurAmount);
+			mpBlurVP->SetFloat("amount",(1 / pLowLevel->GetViewportSize().x) * afBlurAmount);
 
 			mpBlurRectFP->UnBind();
 			mpBlur2dFP->Bind();
@@ -703,8 +689,8 @@ namespace hpl {
 
 
 		mpLowLevelGraphics->CopyContextToTexure(mpScreenBuffer[mImageTrailData.mlCurrentBuffer==0?1:0],0, cVector2l(
-			(int)mpLowLevelGraphics->GetScreenSize().x,
-			(int)mpLowLevelGraphics->GetScreenSize().y));
+			(int)mpLowLevelGraphics->GetViewportSize().x,
+			(int)mpLowLevelGraphics->GetViewportSize().y));
 		{
 			if(mImageTrailData.mbActive) 
 			{
@@ -763,8 +749,8 @@ namespace hpl {
 
 				//Copy screen to new blur buffer
 				mpLowLevelGraphics->CopyContextToTexure(mpScreenBuffer[mImageTrailData.mlCurrentBuffer],0, cVector2l(
-					(int)mpLowLevelGraphics->GetScreenSize().x,
-					(int)mpLowLevelGraphics->GetScreenSize().y));
+					(int)mpLowLevelGraphics->GetViewportSize().x,
+					(int)mpLowLevelGraphics->GetViewportSize().y));
 
 			}
 

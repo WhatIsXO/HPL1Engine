@@ -286,7 +286,7 @@ namespace hpl {
 	bool cLight3DSpot::CreateClipRect(cRect2l &aClipRect, cRenderSettings *apRenderSettings,
 											iLowLevelGraphics *apLowLevelGraphics)
 	{
-		cVector2f vScreenSize = apLowLevelGraphics->GetScreenSize();
+		cVector2f vScreenSize = apLowLevelGraphics->GetViewportSize();
 		bool bVisible = cMath::GetClipRectFromBV(aClipRect,*GetBoundingVolume(),
 												apRenderSettings->mpCamera->GetViewMatrix(), 
 												apRenderSettings->mpCamera->GetProjectionMatrix(),

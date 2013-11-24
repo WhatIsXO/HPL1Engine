@@ -39,10 +39,16 @@ namespace hpl {
 		mbContainsData = false;
 
 		mpPBuffer = NULL;
+		mpFrameBufferObject = NULL;
 
 		if(aType==eTextureType_RenderTarget)
 		{
 			mpPBuffer = hplNew( cPBuffer, (mpLowLevelGraphics,true) );
+		}
+		else if(aType==eTextureType_RenderTarget_FBO || aType == eTextureType_RenderTarget_RGBA16F)
+		{
+			// Frame Buffer Objects - quicker than PBuffers
+			mpFrameBufferObject = mpLowLevelGraphics->CreateFrameBufferObject();
 		}
 
 		//Cubemap does not like mipmaps
@@ -62,6 +68,7 @@ namespace hpl {
 	cSDLTexture::~cSDLTexture()
 	{
 		if(mpPBuffer)hplDelete(mpPBuffer);
+		if(mpFrameBufferObject)hplDelete(mpFrameBufferObject);
 
 		for(size_t i=0; i<mvTextureHandles.size(); ++i)
 		{
@@ -118,11 +125,6 @@ namespace hpl {
 
 	bool cSDLTexture::CreateCubeFromBitmapVec(tBitmap2DVec *avBitmaps)
 	{
-		if(mType == eTextureType_RenderTarget || mTarget != eTextureTarget_CubeMap)
-		{
-			return false;
-		}
-
 		if(avBitmaps->size()<6){
 			Error("Only %d bitmaps supplied for creation of cube map, 6 needed.",avBitmaps->size());
 			return false;
@@ -188,44 +190,79 @@ namespace hpl {
 		glGenTextures(1,(GLuint *)&mvTextureHandles[0]);
 
 
-		if(mType == eTextureType_RenderTarget)
+		if(mType == eTextureType_RenderTarget || mType == eTextureType_RenderTarget_FBO || eTextureType_RenderTarget_RGBA16F)
 		{
-			if(!mpPBuffer->Init(alWidth,alHeight,aCol)){
-				return false;
-			}
-
 			mlWidth = alWidth;
 			mlHeight = alHeight;
+
+			if (mType == eTextureType_RenderTarget )
+			{
+				if(!mpPBuffer->Init(alWidth,alHeight,aCol)){
+					return false;
+				}
+					
+				GLenum GLTarget = mpGfxSDL->GetGLTextureTargetEnum(mTarget);
+
+				glEnable(GLTarget);
+				glBindTexture(GLTarget, mvTextureHandles[0]);
+				if(mbUseMipMaps && mTarget != eTextureTarget_Rect){
+					if(mFilter == eTextureFilter_Bilinear)
+						glTexParameteri(GLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+					else
+						glTexParameteri(GLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				}
+				else{
+					glTexParameteri(GLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				}
+				glTexParameteri(GLTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				// Changed to clamp - prevents bleeding when drawing quads with fragment programs.
+				glTexParameteri(GLTarget,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_BORDER);
+				glTexParameteri(GLTarget,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_BORDER);
+
+				glDisable(GLTarget);
+			}
+			else
+			{
+				GLenum GLTarget = mpGfxSDL->GetGLTextureTargetEnum(mTarget);
+				glBindTexture(GLTarget, mvTextureHandles[0]);
+				if(mbUseMipMaps && mTarget != eTextureTarget_Rect){
+					if(mFilter == eTextureFilter_Bilinear)
+						glTexParameteri(GLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+					else
+						glTexParameteri(GLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				}
+				else{
+					glTexParameteri(GLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+				}
+				glTexParameteri(GLTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				// Changed to clamp - prevents bleeding when drawing quads with fragment programs.
+				glTexParameteri(GLTarget,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_BORDER);
+				glTexParameteri(GLTarget,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_BORDER);
+
+				if (mType == eTextureType_RenderTarget_RGBA16F)
+					glTexImage2D(GL_TEXTURE_2D , 0 , GL_RGBA16F, alWidth, alHeight, 0 , GL_RGBA , GL_FLOAT , 0);
+				else
+					glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, alWidth, alHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+				glBindTexture(GLTarget, 0);
+
+				if(!mpFrameBufferObject->Init(alWidth, alHeight))
+				{
+					return false;
+				}
+
+				if (!mpFrameBufferObject->AttachColorBuffer(0, this))
+				{
+					return false;
+				}
+			}
 
 			if((!cMath::IsPow2(mlHeight) || !cMath::IsPow2(mlWidth)) && mTarget != eTextureTarget_Rect)
 			{
 				Warning("Texture '%s' does not have a pow2 size!\n",msName.c_str());
 			}
 
-			GLenum GLTarget = mpGfxSDL->GetGLTextureTargetEnum(mTarget);
-
-			glEnable(GLTarget);
-			glBindTexture(GLTarget, mvTextureHandles[0]);
-			if(mbUseMipMaps && mTarget != eTextureTarget_Rect){
-				if(mFilter == eTextureFilter_Bilinear)
-					glTexParameteri(GLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-				else
-					glTexParameteri(GLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			}
-			else{
-				glTexParameteri(GLTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			}
-			glTexParameteri(GLTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GLTarget,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-			glTexParameteri(GLTarget,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-
-			glDisable(GLTarget);
-
 			mbContainsData = true;
-		}
-		else
-		{
-			return false;
 		}
 
 		return true;
@@ -567,7 +604,7 @@ namespace hpl {
 
 	bool cSDLTexture::CreateFromBitmapToHandle(iBitmap2D* pBmp, int alHandleIdx)
 	{
-		if(mType == eTextureType_RenderTarget)
+		if(mType == eTextureType_RenderTarget || mType == eTextureType_RenderTarget_FBO)
 		{
 			Error("Rendertarget cannot be created from bitmap\n");
 			return false;

@@ -37,6 +37,7 @@ namespace hpl {
 	class cPhysics;
 	class cAI;
 	class cHaptic;
+	class cHMD;
 	class cGui;
 	
 	class cFPSCounter
@@ -164,6 +165,12 @@ namespace hpl {
 		* \return A pointer to the haptic
 		*/
 		cHaptic* GetHaptic();
+
+		/**
+		*
+		* \return A pointer to the HMD, if it exists
+		*/
+		cHMD* GetHMD();
 		
 		void ResetLogicTimer();
 		void SetUpdatesPerSec(int alUpdatesPerSec);
@@ -193,6 +200,9 @@ namespace hpl {
 
 		bool mbRenderOnce;
 
+		bool mbRiftSupport;
+		bool mbRiftPregenWarp;
+
 		float mfFrameTime;
 
 		float mfUpdateTime;
@@ -217,6 +227,8 @@ namespace hpl {
 		cPhysics *mpPhysics;
 		cAI *mpAI;
 		cHaptic *mpHaptic;
+		cHMD *mpHMD;
+
 		cGui *mpGui;
 	};
 

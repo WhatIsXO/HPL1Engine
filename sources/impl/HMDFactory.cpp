@@ -2,7 +2,7 @@
  * HMDFactory.cpp
  *
  *  Created on: 30/10/2013
- *      Author: prlpcf
+ *      Author: WhatIsXO
  */
 #include "impl/HMDFactory.h"
 #include "impl/RiftHMD.h"

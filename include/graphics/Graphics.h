@@ -26,13 +26,15 @@ namespace hpl {
 	class cResources;
 	class cRenderer2D;
 	class cRenderer3D;
-	class cRendererPostEffects;
+	class cRiftCompositor;
+	class iRendererPostEffects;
 	class cRenderList;
 	class cGraphicsDrawer;
 	class iLowLevelResources;
 	class iLowLevelGraphics;
 	class cMeshCreator;
 	class cMaterialHandler;	
+	class cHMD;
 
 	class cGraphics
 	{
@@ -41,7 +43,7 @@ namespace hpl {
 		~cGraphics();
 
 		bool Init(int alWidth, int alHeight, int alBpp, int abFullscreen, int alMultisampling,
-					const tString &asWindowCaption,cResources* apResources);
+					const tString &asWindowCaption, cResources* apResources, cHMD* apHMD = NULL, bool pregenWarp = false);
 
 		/**
 		 * Get low level graphics routines
@@ -50,27 +52,41 @@ namespace hpl {
 		iLowLevelGraphics* GetLowLevel();
 		
 		/**
-		 * Get the drawer
+		 * Get the screen drawer
 		 * \return 
 		 */
 		cGraphicsDrawer* GetDrawer();
 
+		/**
+		 * Get the overlay drawer
+		 * \return
+		 */
+		cGraphicsDrawer* GetOverlayDrawer();
+
 		cRenderer2D* GetRenderer2D();
 		cRenderer3D* GetRenderer3D(){ return mpRenderer3D;}
-		cRendererPostEffects* GetRendererPostEffects(){ return mpRendererPostEffects;}
+		cRiftCompositor* GetRiftCompositor() { return mpRiftCompositor; }
+		iRendererPostEffects* GetRendererPostEffects(){ return mpRendererPostEffects;}
 		cMeshCreator* GetMeshCreator(){return mpMeshCreator;}
 		cMaterialHandler* GetMaterialHandler(){return mpMaterialHandler;}
+
+		bool GetRiftSupport();
+		cHMD* GetHMD();
 	
 	private:
 		iLowLevelGraphics *mpLowLevelGraphics;
 		iLowLevelResources *mpLowLevelResources;
 		cGraphicsDrawer *mpDrawer;
+		cGraphicsDrawer *mpOverlayDrawer;
 		cMeshCreator *mpMeshCreator;
 		cMaterialHandler *mpMaterialHandler;
 		cRenderer2D* mpRenderer2D;
 		cRenderer3D* mpRenderer3D;
-		cRendererPostEffects* mpRendererPostEffects;
+		iRendererPostEffects* mpRendererPostEffects;
 		cRenderList *mpRenderList;
+		cRiftCompositor* mpRiftCompositor;
+		cHMD* mpHMD;
+		bool mbPregenWarp;
 	};
 
 };

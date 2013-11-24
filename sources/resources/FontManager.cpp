@@ -74,7 +74,7 @@ namespace hpl {
 		if(pFont==NULL && sPath!="")
 		{
 			pFont = mpGraphics->GetLowLevel()->CreateFontData(asNewName);
-			pFont->SetUp(mpGraphics->GetDrawer(),mpLowLevelResources,mpGui);
+			pFont->SetUp(mpGraphics->GetOverlayDrawer(),mpLowLevelResources,mpGui);
 			
 			tString sExt = cString::ToLowerCase(cString::GetFileExt(asName));
 

@@ -27,6 +27,7 @@
 #include "resources/LowLevelResources.h"
 #include "sound/LowLevelSound.h"
 #include "system/LowLevelSystem.h"
+#include "input/HMD.h"
 
 namespace hpl {
 
@@ -46,6 +47,7 @@ namespace hpl {
 		cPhysics* CreatePhysics();
 		cAI* CreateAI();
 		cHaptic* CreateHaptic();
+		cHMD* CreateHMD(cInput* apInput);
 
 	private:
 		iLowLevelSystem *mpLowLevelSystem;
@@ -59,6 +61,7 @@ namespace hpl {
 //		#endif
 		iLowLevelPhysics* mpLowLevelPhysics;
 		iLowLevelHaptic* mpLowLevelHaptic;
+		cHMD* mpHMD;
 	};
 };
 #endif // HPL_LOWLEVELGAMESETUP_SDL_H

@@ -72,6 +72,10 @@ namespace hpl {
 		void SetClipPlaneActive(int alIdx, bool abX);
 
 		cVector2f GetScreenSize();
+
+		cVector2f GetViewportSize();
+		void SetViewportSize(cVector2f avSize);
+
 		cVector2f GetVirtualSize();
 		void SetVirtualSize(cVector2f avSize);
 
@@ -84,6 +88,7 @@ namespace hpl {
 		iTexture* CreateTexture(const cVector2l& avSize,int alBpp,cColor aFillCol,
 								bool abUseMipMaps, eTextureType aType, eTextureTarget aTarget);
 
+		iFrameBufferObject* CreateFrameBufferObject();
 
 		iPixelFormat* GetPixelFormat();
 
@@ -239,6 +244,7 @@ namespace hpl {
 
 	private:
         cVector2l mvScreenSize;
+        cVector2f mvViewportSize;
 		cVector2f mvVirtualSize;
 		int mlMultisampling;
 		int mlBpp;

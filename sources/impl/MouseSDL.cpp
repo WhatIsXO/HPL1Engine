@@ -60,7 +60,7 @@ namespace hpl {
 
 	void cMouseSDL::Update()
 	{
-		cVector2f vScreenSize = mpLowLevelGraphics->GetScreenSize();
+		cVector2f vScreenSize = mpLowLevelGraphics->GetViewportSize();
 		cVector2f vVirtualSize = mpLowLevelGraphics->GetVirtualSize();
 		
 		//mvMouseRelPos = cVector2f(0,0);

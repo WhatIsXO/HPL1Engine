@@ -91,10 +91,9 @@ namespace hpl {
 		void DrawGfxObject(cGfxObject* apObject, const cVector3f& avPos, 
 											const cVector2f& avSize, const cColor& aColor,
 											bool abFlipH=false, bool abFlipV=false, float afAngle = 0);
-
 		
 		/**
-		 * Draw all gfx obejcts, Called after world is rendered by cScene.
+		 * Draw all gfx objects
 		 */
 		void DrawAll();
 
@@ -132,8 +131,8 @@ namespace hpl {
 		void UpdateBackgrounds();
 		void DrawBackgrounds(const cRect2f& aCollideRect);
 		void ClearBackgrounds();
-		
-	private:
+
+	protected:
 		iLowLevelGraphics *mpLowLevelGraphics;
 		cMaterialHandler* mpMaterialHandler;
 		cResources *mpResources;
@@ -144,6 +143,28 @@ namespace hpl {
 
 		tBackgroundImageMap m_mapBackgroundImages;
 	};
+
+/*	class cProjectedGraphicsDrawer : public cGraphicsDrawer
+	{
+	public:
+		cProjectedGraphicsDrawer(iLowLevelGraphics *apLowLevelGraphics,cMaterialHandler* apMaterialHandler,
+						cResources* apResources);
+		~cProjectedGraphicsDrawer();
+
+		*
+		 * Render a quad with the graphics framebuffer into the scene
+
+		void ProjectIntoScene();
+
+		*
+		 * Draw all gfx objects
+
+		void DrawAll();
+
+	private:
+		iTexture *mpFramebuffer;
+
+	};*/
 
 };
 #endif // HPL_GRAPHICSDRAWER_H

@@ -20,6 +20,7 @@
 #define HPL_RENDERER3D_H
 
 #include "graphics/GraphicsTypes.h"
+#include "graphics/GraphicsDrawer.h"
 #include "math/MathTypes.h"
 #include "graphics/Material.h"
 #include "math/Frustum.h"
@@ -49,7 +50,7 @@ namespace hpl {
 	class cRenderList;
 	class iRenderable;
 	class iLight3D;
-	class cRendererPostEffects;
+	class iRendererPostEffects;
 	class cSector;
 
 	class cResources;
@@ -138,7 +139,7 @@ namespace hpl {
 
 		void UpdateRenderList(cWorld3D* apWorld, cCamera3D* apCamera, float afFrameTime);
 
-		void RenderWorld(cWorld3D* apWorld, cCamera3D* apCamera, float afFrameTime);
+		virtual void RenderWorld(cWorld3D* apWorld, cCamera3D* apCamera, float afFrameTime);
 
 		void SetSkyBox(iTexture *apTexture, bool abAutoDestroy);
 		void SetSkyBoxActive(bool abX);
@@ -174,7 +175,7 @@ namespace hpl {
 
 		cBoundingVolume* GetFogBV(){return &mFogBV;}
 
-		void SetPostEffects(cRendererPostEffects *apPostEffects){ mpPostEffects = apPostEffects;}
+		void SetPostEffects(iRendererPostEffects *apPostEffects){ mpPostEffects = apPostEffects;}
 
 		
 		//Debug setup
@@ -189,8 +190,12 @@ namespace hpl {
 
 		void FetchOcclusionQueries();
 	
-	private:
+	protected:
+		void DoRenderInt(cWorld3D* apWorld, cCamera3D* apCamera, float afFrameTime);
+
 		inline void BeginRendering(cCamera3D* apCamera);
+		
+		void RenderViewportContents(cCamera3D* apCamera);
 
 		void InitSkyBox();
 		
@@ -210,7 +215,7 @@ namespace hpl {
 		void RenderTrans(cCamera3D *apCamera);
 
 		void RenderDebug(cCamera3D *apCamera);
-		
+
 		inline void RenderDebugObject(cCamera3D *apCamera,iRenderable* &apObject, iMaterial* apPrevMat, 
 					int alPrevMatId,iVertexBuffer* apPrevVtxBuff,
 					eMaterialRenderType aRenderType, iLight3D* apLight);
@@ -218,7 +223,7 @@ namespace hpl {
 		iLowLevelGraphics *mpLowLevelGraphics;
 		iLowLevelResources *mpLowLevelResources;
 
-		cRendererPostEffects *mpPostEffects;
+		iRendererPostEffects *mpPostEffects;
 
 		bool mbLog;
 

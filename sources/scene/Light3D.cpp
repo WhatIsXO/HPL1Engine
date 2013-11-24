@@ -298,7 +298,7 @@ namespace hpl {
 		apLowLevelGraphics->SetClearColorActive(false);
 
 		apLowLevelGraphics->SetClearStencil(0);
-
+z
 		apLowLevelGraphics->ClearScreen();
 
 		apLowLevelGraphics->SetClearStencilActive(false);
@@ -322,7 +322,7 @@ namespace hpl {
 			if(apRenderSettings->mbLog)
 				Log("Cliprect entire screen\n");
 		}
-		
+
 		//////////////////////////////////////////////////////////
 		// Cast shadows 
         if(mbCastShadows && apRenderSettings->mShowShadows != eRendererShowShadows_None

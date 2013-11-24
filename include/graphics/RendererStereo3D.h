@@ -15,6 +15,10 @@
 #include "graphics/Material.h"
 #include "math/Frustum.h"
 #include "input/HMD.h"
+#include <OVR.h>
+#include <Util/Util_Render_Stereo.h>
+
+using namespace OVR;
 
 namespace hpl {
 
@@ -26,17 +30,23 @@ public:
 	~cRendererStereo3D();
 
 	void RenderWorld(cWorld3D* apWorld, cCamera3D* apCamera, float afFrameTime);
+	void SetCameraToEye(cCamera3D* apCamera, StereoMode eyeMode);
+	void RestoreCamera(cCamera3D* apCamera);
+
 	iTexture* GetLeftFramebuffer() { return mpLeftFramebuffer; };
 	iTexture* GetRightFramebuffer() { return mpRightFramebuffer; };
 
 private:
 
-	void RenderLeft(cWorld3D* apWorld, cCamera3D* apCamera, float afFrameTime);
-	void RenderRight(cWorld3D* apWorld, cCamera3D* apCamera, float afFrameTime);
+	void RenderEye(cWorld3D* apWorld, cCamera3D* apCamera, float afFrameTime, OVR::Util::Render::StereoEyeParams eyeParams);
+	cMatrixf toHplMatrix(Matrix4f ovrMatrix);
 
 	iTexture *mpLeftFramebuffer;
 	iTexture *mpRightFramebuffer;
 	cHMD* mpHMD;
+
+	cMatrixf mOriginalProjection;
+	cMatrixf mOriginalView;
 };
 
 } /* namespace hpl */

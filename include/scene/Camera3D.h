@@ -155,6 +155,7 @@ namespace hpl {
 		//////////////////////////////////////////////////
 		
 		const cMatrixf& GetViewMatrix();
+		void SetViewMatrix(const cMatrixf &a_mtxA){m_mtxView = a_mtxA;}
 		const cMatrixf& GetProjectionMatrix();
 		void SetProjection(const cMatrixf &a_mtxA){m_mtxProjection = a_mtxA;}
 

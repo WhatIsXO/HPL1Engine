@@ -26,6 +26,7 @@
 #include "graphics/Texture.h"
 #include "graphics/GPUProgram.h"
 #include "graphics/VertexBuffer.h"
+#include "graphics/FrameBufferObject.h"
 
 namespace hpl {
 
@@ -235,6 +236,14 @@ namespace hpl {
 		 * \return 
 		 */
 		virtual cVector2f GetScreenSize()=0;
+
+		/**
+		 * Get size of viewport. Default is screen size.
+		 */
+		virtual cVector2f GetViewportSize()=0;
+		virtual void SetViewportSize(cVector2f avSize)=0;
+
+
 		virtual cVector2f GetVirtualSize()=0;
 		/**
 		 * Sets the virtual screen size. Default is 0-1
@@ -267,6 +276,8 @@ namespace hpl {
 		virtual iTexture* CreateTexture(const cVector2l& avSize,int alBpp,cColor aFillCol,
 									bool abUseMipMaps, eTextureType aType, eTextureTarget aTarget)=0;
 
+
+		virtual iFrameBufferObject* CreateFrameBufferObject()=0;
 
 		virtual iPixelFormat* GetPixelFormat()=0;
 
